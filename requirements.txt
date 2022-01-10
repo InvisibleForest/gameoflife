@@ -6,3 +6,5 @@ platformdirs==2.4.0
 pygame==2.1.0
 tomli==1.2.3
 typing-extensions==4.0.1
+
+PyQt5~=5.15.6

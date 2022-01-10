@@ -2,7 +2,8 @@
 
 import pygame as pg
 import copy
-
+import menu
+import sys
 
 # размеры игрового поля и клетки
 WIDTH, HEIGHT = 1000, 500
@@ -11,12 +12,6 @@ cellsize = 10
 # подсчёт кол-ва клеток по осям
 cells_w_cnt = WIDTH // cellsize
 cells_h_cnt = HEIGHT // cellsize
-
-# инициализация
-pg.init()
-surface = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("GameOfLife")
-clock = pg.time.Clock()
 
 
 # списки клеток на нынешнем и следующем шаге
@@ -87,6 +82,20 @@ def drawing_main(fps=10):
     clock.tick(fps)
 
 
+# вызов окна меню
+app = menu.QtWidgets.QApplication(sys.argv)
+Dialog = menu.QtWidgets.QDialog()
+ui = menu.Ui_Dialog()
+ui.setupUi(Dialog, True)
+Dialog.show()
+app.exec_()
+
+# инициализация игры
+pg.init()
+surface = pg.display.set_mode((WIDTH, HEIGHT))
+pg.display.set_caption("GameOfLife")
+clock = pg.time.Clock()
+
 beginning = True
 while beginning:
     # цикл для создания начальных услових игры
@@ -106,7 +115,7 @@ while beginning:
     elif pressed_mouse[2]:
         cells_now[y][x] = 0
         drawing_on_start()
-    drawing_main(fps=60)
+    drawing_main(fps=120)
 
 paused = False
 while True:
