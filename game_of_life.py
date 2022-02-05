@@ -1,22 +1,7 @@
-
-
 import pygame as pg
 import copy
 import menu
 import sys
-
-# размеры игрового поля и клетки
-WIDTH, HEIGHT = 1000, 500
-cellsize = 10
-
-# подсчёт кол-ва клеток по осям
-cells_w_cnt = WIDTH // cellsize
-cells_h_cnt = HEIGHT // cellsize
-
-
-# списки клеток на нынешнем и следующем шаге
-cells_now = [[0 for _ in range(cells_w_cnt)] for _ in range(cells_h_cnt)]
-cells_next = [[0 for _ in range(cells_w_cnt)] for _ in range(cells_h_cnt)]
 
 
 def is_alive(pos: tuple, status: int) -> int:
@@ -26,7 +11,7 @@ def is_alive(pos: tuple, status: int) -> int:
     count = 0
     for y, x in p:
         i, j = pos[0] + y, pos[1] + x
-        if 0 <= j < cells_w_cnt and 0 <= i < cells_h_cnt and cells_now[i][j] == 1:
+        if 0 <= j < w_cells_val and 0 <= i < h_cells_val and cells_now[i][j] == 1:
             count += 1
 
     if status == 0 and count == 3:
@@ -39,23 +24,23 @@ def is_alive(pos: tuple, status: int) -> int:
 def drawing_background():
     """заполнение фона и отрисовка сетки"""
 
-    surface.fill(pg.Color("black"))
-    for i in range(cells_w_cnt):
+    surface.fill(background_color)
+    for i in range(w_cells_val):
         pg.draw.line(surface, (10, 10, 10), (i * cellsize, 0), (i * cellsize, WIDTH))
-    for i in range(cells_h_cnt):
+    for i in range(h_cells_val):
         pg.draw.line(surface, (10, 10, 10), (0, i * cellsize), (WIDTH, i * cellsize))
 
 
 def drawing_cells():
     """подсчёт состояния игры на следующем шаге и его отрисовка"""
 
-    for i in range(cells_h_cnt):
-        for j in range(cells_w_cnt):
+    for i in range(h_cells_val):
+        for j in range(w_cells_val):
             status = cells_now[i][j]
             if cells_now[i][j] == 1:
                 pg.draw.rect(
                     surface,
-                    pg.Color("forestgreen"),
+                    cell_color,
                     (j * cellsize, i * cellsize, cellsize, cellsize),
                 )
             cells_next[i][j] = is_alive((i, j), status)
@@ -64,12 +49,12 @@ def drawing_cells():
 def drawing_on_start():
     """прорисовка начального вида игры пользователем"""
 
-    for i in range(cells_h_cnt):
-        for j in range(cells_w_cnt):
+    for i in range(h_cells_val):
+        for j in range(w_cells_val):
             if cells_now[i][j] == 1:
                 pg.draw.rect(
                     surface,
-                    pg.Color("forestgreen"),
+                    cell_color,
                     (j * cellsize, i * cellsize, cellsize, cellsize),
                 )
 
@@ -82,18 +67,42 @@ def drawing_main(fps=10):
     clock.tick(fps)
 
 
+# список цветов
+colors = {
+    "Black": (0, 0, 0),
+    "White": (255, 255, 255),
+    "Green": (34, 139, 34),
+    "Red": (255, 0, 0),
+    "Blue": (0, 0, 255),
+    "Mint": (162, 228, 184),
+}
+
 # вызов окна меню
 app = menu.QtWidgets.QApplication(sys.argv)
-Dialog = menu.QtWidgets.QDialog()
-ui = menu.Ui_Dialog()
-ui.setupUi(Dialog, True)
-Dialog.show()
+dialog = menu.QtWidgets.QDialog()
+ui = menu.Ui_dialog()
+ui.setupUi(dialog, True)
+dialog.show()
 app.exec_()
+
+
+# установка размера и цвета игрового поля и клетки
+cellsize = 10
+h_cells_val, w_cells_val = map(int, ui.table_size.split("x"))
+WIDTH = w_cells_val * cellsize
+HEIGHT = h_cells_val * cellsize
+background_color = colors[ui.background_color]
+cell_color = colors[ui.cell_color]
+
+# списки клеток на нынешнем и следующем шаге
+cells_now = [[0 for _ in range(w_cells_val)] for _ in range(h_cells_val)]
+cells_next = [[0 for _ in range(w_cells_val)] for _ in range(h_cells_val)]
+
 
 # инициализация игры
 pg.init()
 surface = pg.display.set_mode((WIDTH, HEIGHT))
-pg.display.set_caption("GameOfLife")
+pg.display.set_caption("Game Of Life")
 clock = pg.time.Clock()
 
 beginning = True
@@ -126,5 +135,5 @@ while True:
         elif event.type == pg.KEYDOWN and event.key == pg.K_SPACE:
             paused = not paused
     if not paused:
-        drawing_main(fps=10)
+        drawing_main(fps=ui.speed)
         cells_now = copy.deepcopy(cells_next)
