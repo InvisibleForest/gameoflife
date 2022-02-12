@@ -5,7 +5,7 @@ import sys
 
 
 def is_alive(pos: tuple, status: int) -> int:
-    """проверка соседей и вычисление сосотяния клетки"""
+    """проверка клеток-соседей и вычисление сосотяния клетки"""
 
     p = [(-1, 1), (-1, 0), (-1, -1), (0, 1), (0, -1), (1, 1), (1, 0), (1, -1)]
     count = 0
@@ -21,8 +21,8 @@ def is_alive(pos: tuple, status: int) -> int:
     return 0
 
 
-def drawing_background():
-    """заполнение фона и отрисовка сетки"""
+def drawing_background() -> None:
+    """заполнение фона цветом и отрисовка сетки"""
 
     surface.fill(background_color)
     for i in range(w_cells_val):
@@ -31,38 +31,34 @@ def drawing_background():
         pg.draw.line(surface, (10, 10, 10), (0, i * cellsize), (WIDTH, i * cellsize))
 
 
-def drawing_cells():
+def drawing_cells(start: bool=False) -> None:
     """подсчёт состояния игры на следующем шаге и его отрисовка"""
 
-    for i in range(h_cells_val):
-        for j in range(w_cells_val):
-            status = cells_now[i][j]
-            if cells_now[i][j] == 1:
-                pg.draw.rect(
-                    surface,
-                    cell_color,
-                    (j * cellsize, i * cellsize, cellsize, cellsize),
-                )
-            cells_next[i][j] = is_alive((i, j), status)
+    if not start:
+        for i in range(h_cells_val):
+            for j in range(w_cells_val):
+                if cells_now[i][j] == 1:
+                    pg.draw.rect(
+                        surface,
+                        cell_color,
+                        (j * cellsize, i * cellsize, cellsize, cellsize),
+                    )
+                cells_next[i][j] = is_alive((i, j), cells_now[i][j])
+    else:
+        for i in range(h_cells_val):
+            for j in range(w_cells_val):
+                if cells_now[i][j] == 1:
+                    pg.draw.rect(
+                        surface,
+                        cell_color,
+                        (j * cellsize, i * cellsize, cellsize, cellsize),
+                    )
 
 
-def drawing_on_start():
-    """прорисовка начального вида игры пользователем"""
-
-    for i in range(h_cells_val):
-        for j in range(w_cells_val):
-            if cells_now[i][j] == 1:
-                pg.draw.rect(
-                    surface,
-                    cell_color,
-                    (j * cellsize, i * cellsize, cellsize, cellsize),
-                )
-
-
-def drawing_main(fps=10):
+def drawing_main(start=False, fps=10) -> None:
     """вывод текущего состояния игры на экран"""
     drawing_background()
-    drawing_cells()
+    drawing_cells(start)
     pg.display.flip()
     clock.tick(fps)
 
@@ -120,11 +116,9 @@ while beginning:
     x, y = pos[0] // cellsize, pos[1] // cellsize
     if pressed_mouse[0]:
         cells_now[y][x] = 1
-        drawing_on_start()
     elif pressed_mouse[2]:
         cells_now[y][x] = 0
-        drawing_on_start()
-    drawing_main(fps=120)
+    drawing_main(start=True, fps=120)
 
 paused = False
 while True:
